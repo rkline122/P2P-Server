@@ -13,4 +13,6 @@
   * Once a connection is established, store username, connection speed (made up), and hostname in a "users" table. 
   * Store file descriptions in a "files" table
   * Provide keyword search to users to query the "files" table that returns the resource location(s) of the remote file(s) matching the search
-  * 
+
+## To-Do:
+  *  
