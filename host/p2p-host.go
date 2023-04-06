@@ -13,6 +13,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"net"
 	"os"
 	"regexp"
@@ -64,7 +65,8 @@ func registerWithServer() {
 				fmt.Println("Unable to write to server:", err.Error())
 				return
 			}
-			/* Send list of files and keywords */
+			/* Send description file*/
+			sendFileDescriptor("filelist.txt", connection)
 			/* Query with keyword search */
 			/* Connect with other hosts via FTP */
 
@@ -122,6 +124,22 @@ func getHostInfo() string {
 	info := fmt.Sprintf("%s %s %s %s", username, hostname, port, connectionSpeed)
 
 	return info
+
+}
+
+func sendFileDescriptor(fileName string, connection net.Conn) {
+	file, err := os.Open(fileName)
+	if err != nil {
+		fmt.Println("Failed to open file:", err)
+		return
+	}
+	defer file.Close()
+
+	_, err = io.Copy(connection, file)
+	if err != nil {
+		fmt.Println("Failed to send file:", err)
+		return
+	}
 
 }
 

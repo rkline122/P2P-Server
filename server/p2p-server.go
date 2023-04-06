@@ -12,6 +12,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net"
 	"os"
 	"strings"
@@ -78,4 +79,19 @@ func processClient(connection net.Conn) {
 	tmpStr := fmt.Sprintf("User: %s has connected with a speed of %s."+
 		"\nTheir hostname is: %s and are listening on port %s for FTP connections.", clientUsername, clientSpeed, clientHostname, clientPort)
 	fmt.Println(tmpStr)
+
+	// Recieve host description file
+	file, err := os.Create(fmt.Sprintf("%s_file_descriptions.txt", clientUsername))
+	if err != nil {
+		fmt.Println("Failed to create file:", err)
+		return
+	}
+	defer file.Close()
+
+	// Copy the data from the network connection to the file
+	_, err = io.Copy(file, connection)
+	if err != nil {
+		fmt.Println("Failed to receive file:", err)
+		return
+	}
 }
