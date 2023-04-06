@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strings"
 )
 
 const (
@@ -53,5 +54,28 @@ func main() {
 }
 
 func processClient(connection net.Conn) {
-	fmt.Println("Implement Me!")
+	var (
+		buffer         = make([]byte, 1024)
+		clientUsername string
+		clientHostname string
+		clientPort     string
+		clientSpeed    string
+	)
+
+	// Read host info
+	mLen, err := connection.Read(buffer)
+	if err != nil {
+		fmt.Println("Error reading:", err.Error())
+		return
+	}
+	bufferToString := string(buffer[:mLen])
+	hostInfo := strings.Split(bufferToString, " ")
+	clientUsername = hostInfo[0]
+	clientHostname = hostInfo[1]
+	clientPort = hostInfo[2]
+	clientSpeed = hostInfo[3]
+
+	tmpStr := fmt.Sprintf("User: %s has connected with a speed of %s."+
+		"\nTheir hostname is: %s and are listening on port %s for FTP connections.", clientUsername, clientSpeed, clientHostname, clientPort)
+	fmt.Println(tmpStr)
 }
