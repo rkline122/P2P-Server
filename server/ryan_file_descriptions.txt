@@ -1,2 +1,0 @@
-samplefile1, just a simple text file
-samplefile2, just another simple text file

@@ -13,7 +13,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"io"
 	"net"
 	"os"
 	"regexp"
@@ -135,12 +134,19 @@ func sendFileDescriptor(fileName string, connection net.Conn) {
 	}
 	defer file.Close()
 
-	_, err = io.Copy(connection, file)
-	if err != nil {
-		fmt.Println("Failed to send file:", err)
-		return
+	var fileStr string = ""
+	// Create a scanner to read the file line by line
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		fileStr += line + "\n"
 	}
 
+	_, err = connection.Write([]byte(fileStr))
+	if err != nil {
+		fmt.Println("Unable to write to server:", err.Error())
+		return
+	}
 }
 
 func main() {

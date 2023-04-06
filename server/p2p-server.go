@@ -11,8 +11,8 @@ Centralized Server
 package main
 
 import (
+	"bufio"
 	"fmt"
-	"io"
 	"net"
 	"os"
 	"strings"
@@ -23,6 +23,15 @@ const (
 	SERVER_PORT = "8636"
 	SERVER_TYPE = "tcp"
 )
+
+var (
+	files = make([]FileEntry, 0)
+)
+
+type FileEntry struct {
+	name        string
+	description string
+}
 
 func main() {
 	fmt.Println("Server Running...")
@@ -80,18 +89,60 @@ func processClient(connection net.Conn) {
 		"\nTheir hostname is: %s and are listening on port %s for FTP connections.", clientUsername, clientSpeed, clientHostname, clientPort)
 	fmt.Println(tmpStr)
 
-	// Recieve host description file
-	file, err := os.Create(fmt.Sprintf("%s_file_descriptions.txt", clientUsername))
+	// exampleFile := FileEntry{
+	// 	name:        "example",
+	// 	description: "example description",
+	// }
+	// files = append(files, exampleFile)
+
+	mLen, err = connection.Read(buffer)
 	if err != nil {
-		fmt.Println("Failed to create file:", err)
+		fmt.Println("Error reading:", err.Error())
+		return
+	}
+	bufferToString = string(buffer[:mLen])
+
+	fmt.Println(bufferToString)
+
+	// for _, val := range files {
+	// 	fmt.Println(val)
+	// }
+}
+
+func parseFileDescriptions(fileName string) {
+	// Parses file and stores file names and descriptions in global slcie
+	file, err := os.Open(fileName)
+	if err != nil {
+		fmt.Println("Failed to open file:", err)
 		return
 	}
 	defer file.Close()
 
-	// Copy the data from the network connection to the file
-	_, err = io.Copy(file, connection)
-	if err != nil {
-		fmt.Println("Failed to receive file:", err)
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		// Split the line by comma to extract the filename and file description
+		parts := strings.Split(line, ",")
+		if len(parts) != 2 {
+			fmt.Println("Failed to parse line:", line)
+			continue
+		}
+		filename := strings.TrimSpace(parts[0])
+		fileDescription := strings.TrimSpace(parts[1])
+
+		// Create a FileEntry struct and append it to the slice
+		fileEntry := FileEntry{
+			name:        filename,
+			description: fileDescription,
+		}
+		files = append(files, fileEntry)
+
+	}
+
+	if err := scanner.Err(); err != nil {
+		fmt.Println("Failed to read file:", err)
 		return
 	}
+
 }
