@@ -11,7 +11,6 @@ Centralized Server
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"net"
 	"os"
@@ -29,8 +28,11 @@ var (
 )
 
 type FileEntry struct {
-	name        string
-	description string
+	owner           string
+	ftpServerAddr   string
+	connectionSpeed string
+	fileName        string
+	description     string
 }
 
 func main() {
@@ -84,16 +86,9 @@ func processClient(connection net.Conn) {
 	clientHostname = hostInfo[1]
 	clientPort = hostInfo[2]
 	clientSpeed = hostInfo[3]
+	ftpAddr := fmt.Sprintf("%s:%s", clientHostname, clientPort)
 
-	tmpStr := fmt.Sprintf("User: %s has connected with a speed of %s."+
-		"\nTheir hostname is: %s and are listening on port %s for FTP connections.", clientUsername, clientSpeed, clientHostname, clientPort)
-	fmt.Println(tmpStr)
-
-	// exampleFile := FileEntry{
-	// 	name:        "example",
-	// 	description: "example description",
-	// }
-	// files = append(files, exampleFile)
+	fmt.Printf("%s has connected\n", clientUsername)
 
 	mLen, err = connection.Read(buffer)
 	if err != nil {
@@ -101,48 +96,24 @@ func processClient(connection net.Conn) {
 		return
 	}
 	bufferToString = string(buffer[:mLen])
+	lines := strings.Split(bufferToString, "\n")
 
-	fmt.Println(bufferToString)
+	for i := 0; i < len(lines)-1; i++ {
+		splitLine := strings.Split(lines[i], ", ")
+		fileName := splitLine[0]
+		description := splitLine[1]
 
-	// for _, val := range files {
-	// 	fmt.Println(val)
-	// }
-}
-
-func parseFileDescriptions(fileName string) {
-	// Parses file and stores file names and descriptions in global slcie
-	file, err := os.Open(fileName)
-	if err != nil {
-		fmt.Println("Failed to open file:", err)
-		return
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := scanner.Text()
-
-		// Split the line by comma to extract the filename and file description
-		parts := strings.Split(line, ",")
-		if len(parts) != 2 {
-			fmt.Println("Failed to parse line:", line)
-			continue
+		entry := FileEntry{
+			owner:           clientUsername,
+			ftpServerAddr:   ftpAddr,
+			connectionSpeed: clientSpeed,
+			fileName:        fileName,
+			description:     description,
 		}
-		filename := strings.TrimSpace(parts[0])
-		fileDescription := strings.TrimSpace(parts[1])
-
-		// Create a FileEntry struct and append it to the slice
-		fileEntry := FileEntry{
-			name:        filename,
-			description: fileDescription,
-		}
-		files = append(files, fileEntry)
-
+		files = append(files, entry)
 	}
 
-	if err := scanner.Err(); err != nil {
-		fmt.Println("Failed to read file:", err)
-		return
+	for _, val := range files {
+		fmt.Println(val)
 	}
-
 }
