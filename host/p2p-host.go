@@ -66,8 +66,40 @@ func registerWithServer() {
 			}
 			/* Send description file*/
 			sendFileDescriptor("filelist.txt", connection)
-			/* Query with keyword search */
-			/* Connect with other hosts via FTP */
+
+			fmt.Println("Connection successful!")
+			fmt.Println("======================")
+			fmt.Println("Available Commands:")
+			fmt.Println("'search' - submit a query for files on the server by their descriptions")
+			fmt.Println("'ftp' - initialize a ftp connection with another host on the server")
+			fmt.Println("'quit' - terminate the connection to the server.")
+
+			for {
+				fmt.Println("Enter a command:")
+				scanner := bufio.NewScanner(os.Stdin)
+
+				if scanner.Scan() {
+					command = scanner.Text()
+				}
+
+				if command == "search" {
+					// TODO: send keyword to server, server should return list of file entries
+					fmt.Println("Enter a keyword to search for:")
+				} else if command == "ftp" {
+					// TODO: Implement ftp logic here
+					fmt.Println("Connect to a host:")
+				} else if command == "quit" {
+					// TODO: tell server you are leaving so it can remove your data
+					fmt.Println("Terminating connection")
+					break
+				} else {
+					fmt.Println("Invalid command. Try again")
+				}
+				/* Query with keyword search */
+				/* Connect with other hosts via FTP */
+
+			}
+			connection.Close()
 
 		} else if command == "exit" {
 			os.Exit(0)

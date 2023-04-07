@@ -90,6 +90,7 @@ func processClient(connection net.Conn) {
 
 	fmt.Printf("%s has connected\n", clientUsername)
 
+	// Read and store file descriptions in global slice
 	mLen, err = connection.Read(buffer)
 	if err != nil {
 		fmt.Println("Error reading:", err.Error())
@@ -113,7 +114,17 @@ func processClient(connection net.Conn) {
 		files = append(files, entry)
 	}
 
-	for _, val := range files {
-		fmt.Println(val)
+	// Handle Keyword searches
+
+}
+
+func filterByKeyword(keyword string) []FileEntry {
+	var matches []FileEntry
+
+	for _, entry := range files {
+		if strings.Contains(entry.description, keyword) {
+			matches = append(matches, entry)
+		}
 	}
+	return matches
 }
