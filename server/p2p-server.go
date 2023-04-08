@@ -37,6 +37,9 @@ type FileEntry struct {
 }
 
 func main() {
+	/*
+		Runs the central server. Processes clients as they connect.
+	*/
 	fmt.Println("Server Running...")
 	server, err := net.Listen(SERVER_TYPE, SERVER_HOST+":"+SERVER_PORT)
 	if err != nil {
@@ -66,6 +69,10 @@ func main() {
 }
 
 func processClient(connection net.Conn) {
+	/*
+		Collects host information, stores file descriptions, and
+		handles keyword searches
+	*/
 	var (
 		clientUsername string
 		clientHostname string
@@ -117,17 +124,14 @@ func processClient(connection net.Conn) {
 			fmt.Printf("Can't parse file entry on line %d", i+1)
 		}
 	}
-
-	// Handle Keyword searches
 	handleKeywordSearch(connection)
-
-	// Remove host data and disconnect
 	disconnectClient(clientUsername, ftpAddr, connection)
-
 }
 
 func disconnectClient(hostUserName, hostAddr string, connection net.Conn) {
-	// Remove hosts files from server before ending connection
+	/*
+		Removes files from server then closes the connection
+	*/
 	var indicesToRemove []int
 
 	for i := 0; i < len(files); i++ {
@@ -145,6 +149,11 @@ func disconnectClient(hostUserName, hostAddr string, connection net.Conn) {
 }
 
 func handleKeywordSearch(connection net.Conn) {
+	/*
+		Reads keyword(s) from buffer, then filters file descriptions by
+		the input. Matching file entries are converted to a string and sent
+		to the client
+	*/
 	for {
 		var searchResults string
 
@@ -173,6 +182,9 @@ func handleKeywordSearch(connection net.Conn) {
 }
 
 func filterByKeyword(keyword string) []FileEntry {
+	/*
+		Return a list of FileEntries with descriptions containing the keyword
+	*/
 	var matches []FileEntry
 
 	for _, entry := range files {

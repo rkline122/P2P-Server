@@ -1,3 +1,12 @@
+/*
+Project 3: P2P Server
+By Ryan Kline
+	---
+CIS 457 - Data Communications
+Winter 2023
+=====================
+Host - FTP Server Logic
+*/
 package main
 
 import (
@@ -20,8 +29,6 @@ const (
 
 var SERVER_PORT = generatePortNumber()
 
-/* =============== Host FTP Server/Client =================== */
-
 func ftpServer() {
 	/*
 	   Starts up server using the host, port, and
@@ -41,8 +48,6 @@ func ftpServer() {
 			os.Exit(1)
 		}
 	}(server)
-
-	fmt.Println("Listening on " + SERVER_HOST + ":" + SERVER_PORT)
 
 	for {
 		connection, err := server.Accept()

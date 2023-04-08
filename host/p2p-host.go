@@ -21,19 +21,28 @@ import (
 )
 
 func connectToServer(host, port string) net.Conn {
+	/*
+		Given a host and port, a connection is established.
+		Returns an interface of type net.Conn if successful.
+	*/
 	connection, err := net.Dial(SERVER_TYPE, host+":"+port)
 	if err != nil {
 		fmt.Println(err)
 	} else {
-		fmt.Println(fmt.Sprintf("[Control] Connected to %s:%s", host, port))
+		fmt.Println(fmt.Sprintf("Connected to %s:%s", host, port))
 		return connection
 	}
 	return nil
 }
 
-/* =============== Host to Central Server ================== */
-
 func registerWithServer() {
+	/*
+		Connects the host to the central server and sends the server
+		the hosts' information (username, hostname, connection speed, etc.).
+
+		Upon successful connection, the host is able to enter commands to query
+		the sever, connect with other hosts, or to terminate this connection.
+	*/
 	var (
 		connectPattern = `^CONNECT ([a-zA-Z0-9\-\.]+:[0-9]+)$`
 		command        string
@@ -65,7 +74,7 @@ func registerWithServer() {
 				fmt.Println("Unable to write to server:", err.Error())
 				return
 			}
-			/* Send description file*/
+
 			sendFileDescriptor("filelist.txt", connection)
 
 			fmt.Println("Connection successful!")
@@ -88,8 +97,6 @@ func registerWithServer() {
 				} else {
 					fmt.Println("Invalid command. Try again")
 				}
-				/* Query with keyword search */
-				/* Connect with other hosts via FTP */
 
 			}
 			connection.Close()
@@ -104,6 +111,9 @@ func registerWithServer() {
 }
 
 func printCommands() {
+	/*
+		Prints a list of available commands to the terminal
+	*/
 	fmt.Println("\nAvailable Commands:")
 	fmt.Println("'search' - submit a query for files on the server by their descriptions")
 	fmt.Println("'ftp' - initialize a ftp connection with another host on the server")
@@ -111,6 +121,10 @@ func printCommands() {
 }
 
 func keywordSearch(connection net.Conn) {
+	/*
+		Gets input from the user and sends it to the server.
+		Prints the results recieved by the server
+	*/
 	var input string
 	buffer := make([]byte, 1024)
 
@@ -130,12 +144,16 @@ func keywordSearch(connection net.Conn) {
 	bufferToString := string(buffer[:mLen])
 	entries := strings.Split(bufferToString, "\n")
 
+	fmt.Println("\nSearch Results:")
 	for _, entry := range entries {
 		fmt.Printf("%s\n", entry)
 	}
 }
 
 func getHostInfo() string {
+	/*
+		Returns a string of the hosts information (username, hostname, port, connection speed)
+	*/
 	var (
 		username        string
 		connectionSpeed string
@@ -184,6 +202,9 @@ func getHostInfo() string {
 }
 
 func sendFileDescriptor(fileName string, connection net.Conn) {
+	/*
+		Parses the file descriptor and writes its contents to the server
+	*/
 	file, err := os.Open(fileName)
 	if err != nil {
 		fmt.Println("Failed to open file:", err)
@@ -192,14 +213,13 @@ func sendFileDescriptor(fileName string, connection net.Conn) {
 	defer file.Close()
 
 	var fileStr string = ""
-	// Create a scanner to read the file line by line
+
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
 		fileStr += line + "\n"
 	}
 
-	fmt.Println(fileStr)
 	_, err = connection.Write([]byte(fileStr))
 	if err != nil {
 		fmt.Println("Unable to write to server:", err.Error())
