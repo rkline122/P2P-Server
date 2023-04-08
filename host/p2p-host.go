@@ -69,13 +69,8 @@ func registerWithServer() {
 			sendFileDescriptor("filelist.txt", connection)
 
 			fmt.Println("Connection successful!")
-			fmt.Println("======================")
-			fmt.Println("Available Commands:")
-			fmt.Println("'search' - submit a query for files on the server by their descriptions")
-			fmt.Println("'ftp' - initialize a ftp connection with another host on the server")
-			fmt.Println("'quit' - terminate the connection to the server.\n")
-
 			for {
+				printCommands()
 				fmt.Println("Enter a command:")
 				scanner := bufio.NewScanner(os.Stdin)
 
@@ -84,13 +79,10 @@ func registerWithServer() {
 				}
 
 				if command == "search" {
-					// TODO: send keyword to server, server should return list of file entries
 					keywordSearch(connection)
 				} else if command == "ftp" {
-					// TODO: Implement ftp logic here
-					fmt.Println("Connect to a host:")
+					ftpClient()
 				} else if command == "quit" {
-					// TODO: tell server you are leaving so it can remove your data
 					fmt.Println("Terminating connection")
 					break
 				} else {
@@ -111,6 +103,13 @@ func registerWithServer() {
 	}
 }
 
+func printCommands() {
+	fmt.Println("\nAvailable Commands:")
+	fmt.Println("'search' - submit a query for files on the server by their descriptions")
+	fmt.Println("'ftp' - initialize a ftp connection with another host on the server")
+	fmt.Println("'quit' - terminate the connection to the server.\n")
+}
+
 func keywordSearch(connection net.Conn) {
 	var input string
 	buffer := make([]byte, 1024)
@@ -122,7 +121,6 @@ func keywordSearch(connection net.Conn) {
 		if scanner.Scan() {
 			input = scanner.Text()
 		}
-
 		break
 	}
 
@@ -201,6 +199,7 @@ func sendFileDescriptor(fileName string, connection net.Conn) {
 		fileStr += line + "\n"
 	}
 
+	fmt.Println(fileStr)
 	_, err = connection.Write([]byte(fileStr))
 	if err != nil {
 		fmt.Println("Unable to write to server:", err.Error())

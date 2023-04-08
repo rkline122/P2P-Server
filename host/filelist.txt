@@ -1,2 +1,2 @@
-samplefile1, just a simple text file
-samplefile2, just another simple text file
+samplefile1.txt, just a simple text file
+samplefile2.txt, just another simple text file

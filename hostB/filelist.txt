@@ -1,0 +1,3 @@
+jokes.txt, a list of jokes
+samplefile3.txt, host B's sample file
+

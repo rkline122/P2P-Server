@@ -100,17 +100,22 @@ func processClient(connection net.Conn) {
 
 	for i := 0; i < len(lines)-1; i++ {
 		splitLine := strings.Split(lines[i], ", ")
-		fileName := splitLine[0]
-		description := splitLine[1]
 
-		entry := FileEntry{
-			owner:           clientUsername,
-			ftpServerAddr:   ftpAddr,
-			connectionSpeed: clientSpeed,
-			fileName:        fileName,
-			description:     description,
+		if len(splitLine) == 2 {
+			fileName := splitLine[0]
+			description := splitLine[1]
+
+			entry := FileEntry{
+				owner:           clientUsername,
+				ftpServerAddr:   ftpAddr,
+				connectionSpeed: clientSpeed,
+				fileName:        fileName,
+				description:     description,
+			}
+			files = append(files, entry)
+		} else {
+			fmt.Printf("Can't parse file entry on line %d", i+1)
 		}
-		files = append(files, entry)
 	}
 
 	// Handle Keyword searches

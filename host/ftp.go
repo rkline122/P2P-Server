@@ -230,7 +230,7 @@ func ftpClient() {
 				return
 			}
 		} else if command == "exit" {
-			os.Exit(0)
+			return
 		} else {
 			fmt.Println("Invalid Command. Use `CONNECT <server name/IP address> <server port>` to connect to " +
 				"a server")
