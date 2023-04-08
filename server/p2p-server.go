@@ -115,9 +115,28 @@ func processClient(connection net.Conn) {
 
 	// Handle Keyword searches
 	handleKeywordSearch(connection)
-	fmt.Printf("%s disconnected\n", clientUsername)
-	connection.Close()
 
+	// Remove host data and disconnect
+	disconnectClient(clientUsername, ftpAddr, connection)
+
+}
+
+func disconnectClient(hostUserName, hostAddr string, connection net.Conn) {
+	// Remove hosts files from server before ending connection
+	var indicesToRemove []int
+
+	for i := 0; i < len(files); i++ {
+		if files[i].ftpServerAddr == hostAddr {
+			indicesToRemove = append(indicesToRemove, i)
+		}
+	}
+
+	for i := len(indicesToRemove) - 1; i >= 0; i-- {
+		index := indicesToRemove[i]
+		files = append(files[:index], files[index+1:]...)
+	}
+	fmt.Printf("%s disconnected\n", hostUserName)
+	connection.Close()
 }
 
 func handleKeywordSearch(connection net.Conn) {
@@ -130,7 +149,6 @@ func handleKeywordSearch(connection net.Conn) {
 			return
 		}
 		bufferToString := string(buffer[:mLen])
-		fmt.Printf("%s\n", bufferToString)
 
 		if bufferToString == "quit" {
 			break
@@ -144,7 +162,6 @@ func handleKeywordSearch(connection net.Conn) {
 			} else {
 				searchResults = "No files found matching search"
 			}
-			fmt.Println(searchResults)
 			connection.Write([]byte(searchResults))
 		}
 	}
