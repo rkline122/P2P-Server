@@ -17,6 +17,7 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"time"
 )
 
 func connectToServer(host, port string) net.Conn {
@@ -72,7 +73,7 @@ func registerWithServer() {
 			fmt.Println("Available Commands:")
 			fmt.Println("'search' - submit a query for files on the server by their descriptions")
 			fmt.Println("'ftp' - initialize a ftp connection with another host on the server")
-			fmt.Println("'quit' - terminate the connection to the server.")
+			fmt.Println("'quit' - terminate the connection to the server.\n")
 
 			for {
 				fmt.Println("Enter a command:")
@@ -84,7 +85,7 @@ func registerWithServer() {
 
 				if command == "search" {
 					// TODO: send keyword to server, server should return list of file entries
-					fmt.Println("Enter a keyword to search for:")
+					keywordSearch(connection)
 				} else if command == "ftp" {
 					// TODO: Implement ftp logic here
 					fmt.Println("Connect to a host:")
@@ -107,6 +108,32 @@ func registerWithServer() {
 			fmt.Println("Invalid Command. Use `CONNECT <server name/IP address> <server port>` to connect to a server")
 		}
 
+	}
+}
+
+func keywordSearch(connection net.Conn) {
+	var input string
+	buffer := make([]byte, 1024)
+
+	for {
+		fmt.Println("Enter a keyword to search for:")
+		scanner := bufio.NewScanner(os.Stdin)
+
+		if scanner.Scan() {
+			input = scanner.Text()
+		}
+
+		break
+	}
+
+	connection.Write([]byte(input))
+	time.Sleep(2)
+	mLen, _ := connection.Read(buffer)
+	bufferToString := string(buffer[:mLen])
+	entries := strings.Split(bufferToString, "\n")
+
+	for _, entry := range entries {
+		fmt.Printf("%s\n", entry)
 	}
 }
 
@@ -182,5 +209,6 @@ func sendFileDescriptor(fileName string, connection net.Conn) {
 }
 
 func main() {
+	go ftpServer()
 	registerWithServer()
 }

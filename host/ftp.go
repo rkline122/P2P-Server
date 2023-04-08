@@ -22,7 +22,7 @@ var SERVER_PORT = generatePortNumber()
 
 /* =============== Host FTP Server/Client =================== */
 
-func ftpServer(syncUp chan bool) {
+func ftpServer() {
 	/*
 	   Starts up server using the host, port, and
 	   protocol defined above. Once a client is connected,
@@ -43,7 +43,6 @@ func ftpServer(syncUp chan bool) {
 	}(server)
 
 	fmt.Println("Listening on " + SERVER_HOST + ":" + SERVER_PORT)
-	syncUp <- true
 
 	for {
 		connection, err := server.Accept()
@@ -123,7 +122,7 @@ func processFTPClient(connection net.Conn) {
 	}
 }
 
-func ftpClient(syncUp chan bool) {
+func ftpClient() {
 	/*
 		Prompts user to connect to the server using the command 'CONNECT <server name/IP address>:<port>'.
 		Upon successful connection, the user is able to send commands to the server. If a command requires a
@@ -138,8 +137,6 @@ func ftpClient(syncUp chan bool) {
 		DATA_PORT      = generatePortNumber()
 	)
 
-	// Waits for Server to be initialized before initializing client
-	<-syncUp
 	for {
 		fmt.Println("[FTP] Connect to a server:")
 

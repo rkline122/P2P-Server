@@ -24,7 +24,8 @@ const (
 )
 
 var (
-	files = make([]FileEntry, 0)
+	files  = make([]FileEntry, 0)
+	buffer = make([]byte, 1024)
 )
 
 type FileEntry struct {
@@ -60,14 +61,12 @@ func main() {
 			fmt.Println("Error accepting: ", err.Error())
 			os.Exit(1)
 		}
-		fmt.Println("Client connected")
 		go processClient(connection)
 	}
 }
 
 func processClient(connection net.Conn) {
 	var (
-		buffer         = make([]byte, 1024)
 		clientUsername string
 		clientHostname string
 		clientPort     string
@@ -115,7 +114,40 @@ func processClient(connection net.Conn) {
 	}
 
 	// Handle Keyword searches
+	handleKeywordSearch(connection)
+	fmt.Printf("%s disconnected\n", clientUsername)
+	connection.Close()
 
+}
+
+func handleKeywordSearch(connection net.Conn) {
+	for {
+		var searchResults string
+
+		mLen, err := connection.Read(buffer)
+		if err != nil {
+			fmt.Println("Error reading:", err.Error())
+			return
+		}
+		bufferToString := string(buffer[:mLen])
+		fmt.Printf("%s\n", bufferToString)
+
+		if bufferToString == "quit" {
+			break
+		} else {
+			results := filterByKeyword(bufferToString)
+			if len(results) > 0 {
+				for _, file := range results {
+					fileStr := fmt.Sprintf("Filename: %s | Description: %s | Host: %s | Connection Speed: %s\n", file.fileName, file.description, file.ftpServerAddr, file.connectionSpeed)
+					searchResults += fileStr
+				}
+			} else {
+				searchResults = "No files found matching search"
+			}
+			fmt.Println(searchResults)
+			connection.Write([]byte(searchResults))
+		}
+	}
 }
 
 func filterByKeyword(keyword string) []FileEntry {
